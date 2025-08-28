@@ -23,33 +23,41 @@ def itt_to_srt(itt_file_name: str, srt_file_name: str | None = None):
     srt_file = Document()
     srt_file.make(srt_file_name)
 
-    itt_dataREAL = itt_data.findall(
-        ".//tt:body/tt:div/tt:p", namespaces={"tt": "http://www.w3.org/ns/ttml"}
-    )
+    # Namespace-onafhankelijk: pak gewoon alle <p>
+    itt_dataREAL = itt_data.findall(".//{*}p")
     if not itt_dataREAL:
         print("No data found in ITT file.")
         return False
 
-    def format_timestamp(ts):
-        # Convert ITT timestamp to SRT format: HH:MM:SS,mmm
-        # ITT may use . for milliseconds, SRT uses ,
-        ts = ts.replace(";", ":")  # Replace any ; with :
+    def format_timestamp(ts: str) -> str:
+        """Convert ITT/TTML timestamp to SRT format (HH:MM:SS,mmm)."""
+        # Soms staat er 00:00:01.500 of 00:00:01;500
+        ts = ts.replace(";", ":")
         if "." in ts:
-            ts = ts.replace(".", ",")
-        if len(ts.split(":")) == 2:
-            ts = "00:" + ts
-        if "," not in ts:
-            ts += ",000"
+            time_part, ms_part = ts.split(".", 1)
+        elif "," in ts:
+            time_part, ms_part = ts.split(",", 1)
         else:
-            left, right = ts.split(",")
-            right = right.ljust(3, "0")[:3]
-            ts = f"{left},{right}"
-        return ts
+            time_part, ms_part = ts, "000"
+
+        # Pad ms naar 3 cijfers
+        ms_part = ms_part.ljust(3, "0")[:3]
+
+        # Zorg dat tijd altijd HH:MM:SS heeft
+        time_fields = time_part.split(":")
+        while len(time_fields) < 3:
+            time_fields.insert(0, "00")
+        time_part = ":".join(time_fields)
+
+        return f"{time_part},{ms_part}"
 
     for idx, item in enumerate(itt_dataREAL, start=1):
         start = format_timestamp(item.attrib.get("begin", "00:00:00.000"))
         end = format_timestamp(item.attrib.get("end", "00:00:00.000"))
-        text = "".join(item.itertext()).replace("\n", " ").strip()
+
+        # Gebruik join zodat spaties netjes blijven, geen rare \n weghalen
+        text = " ".join(t.strip() for t in item.itertext() if t.strip())
+
         srt_file.append(f"{idx}\n{start} --> {end}\n{text}\n\n")
 
     return True
