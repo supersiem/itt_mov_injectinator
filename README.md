@@ -1,2 +1,5 @@
 # itt_mov_injectinator
-doet wat het zegt
+
+neem een itt bestand en een mov (kan ook een andere zijn) en doe er iets mee 
+
+ffmpeg is nodig
