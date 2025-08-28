@@ -40,9 +40,8 @@ def itt_to_srt(itt_file_name: str, srt_file_name: str | None = None):
 
 
 if __name__ == "__main__":
-    itt_path = input("sleep het itt bestand in dit script: \n")
-    mov_path = input("sleep het mov bestand in dit script: \n")
+    itt_path = input("sleep het itt bestand in dit script: \n").strip()
+    mov_path = input("sleep het mov bestand in dit script: \n").strip()
 
     itt_to_srt(itt_path, "temp.srt")
     ffmpeg(f'-i "{mov_path}" -i "temp.srt" -c copy -c:s mov_text "output.mov"')
-    os.remove("temp.srt")
