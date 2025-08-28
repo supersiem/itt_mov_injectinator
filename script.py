@@ -30,11 +30,23 @@ def itt_to_srt(itt_file_name: str, srt_file_name: str | None = None):
         print("No data found in ITT file.")
         return False
 
+    def format_timestamp(ts):
+        # Ensure the timestamp is in HH:MM:SS,mmm format
+        if "." in ts:
+            ts = ts.replace(".", ",")
+        if len(ts.split(":")) == 2:
+            ts = "00:" + ts
+        if len(ts.split(",")) == 1:
+            ts += ",000"
+        elif len(ts.split(",")[1]) < 3:
+            ts = ts.split(",")[0] + "," + ts.split(",")[1].ljust(3, "0")
+        return ts
+
     for idx, item in enumerate(itt_dataREAL, start=1):
-        start = item.attrib.get("begin", "00:00:00.000").replace(".", ",")
-        end = item.attrib.get("end", "00:00:00.000").replace(".", ",")
+        start = format_timestamp(item.attrib.get("begin", "00:00:00.000"))
+        end = format_timestamp(item.attrib.get("end", "00:00:00.000"))
         text = "".join(item.itertext()).replace("\n", " ").strip()
-        srt_file.append(f"{idx}\n{start} --> {end}\n{text}\n")
+        srt_file.append(f"{idx}\n{start} --> {end}\n{text}\n\n")
 
     return True
 
@@ -44,4 +56,7 @@ if __name__ == "__main__":
     mov_path = input("sleep het mov bestand in dit script: \n").strip()
 
     itt_to_srt(itt_path, "temp.srt")
-    ffmpeg(f'-i "{mov_path}" -i "temp.srt" -c copy -c:s mov_text "output.mov"')
+    ffmpeg(
+        f'-i "{mov_path}" -i "temp.srt" -map 0 -map 1 -c copy -c:s mov_text -y "output.mov"'
+    )
+    ffmpeg(f'-i "{mov_path}" -vf subtitles=temp.srt -c:a copy -y "output_burned.mov"')
