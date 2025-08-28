@@ -24,9 +24,9 @@ def itt_to_srt(itt_file_name: str, srt_file_name: str | None = None):
     srt_file.make(srt_file_name)
 
     itt_dataREAL = itt_data.findall(
-        "tt:body:div:p", namespaces={"tt": "http://www.w3.org/ns/ttml"}
+        ".//tt:body/tt:div/tt:p", namespaces={"tt": "http://www.w3.org/ns/ttml"}
     )
-    if itt_dataREAL is None:
+    if not itt_dataREAL:
         print("No data found in ITT file.")
         return False
 
