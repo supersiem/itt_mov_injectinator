@@ -31,15 +31,19 @@ def itt_to_srt(itt_file_name: str, srt_file_name: str | None = None):
         return False
 
     def format_timestamp(ts):
-        # Ensure the timestamp is in HH:MM:SS,mmm format
+        # Convert ITT timestamp to SRT format: HH:MM:SS,mmm
+        # ITT may use . for milliseconds, SRT uses ,
+        ts = ts.replace(";", ":")  # Replace any ; with :
         if "." in ts:
             ts = ts.replace(".", ",")
         if len(ts.split(":")) == 2:
             ts = "00:" + ts
-        if len(ts.split(",")) == 1:
+        if "," not in ts:
             ts += ",000"
-        elif len(ts.split(",")[1]) < 3:
-            ts = ts.split(",")[0] + "," + ts.split(",")[1].ljust(3, "0")
+        else:
+            left, right = ts.split(",")
+            right = right.ljust(3, "0")[:3]
+            ts = f"{left},{right}"
         return ts
 
     for idx, item in enumerate(itt_dataREAL, start=1):
