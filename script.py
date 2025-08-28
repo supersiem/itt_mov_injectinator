@@ -56,3 +56,4 @@ if __name__ == "__main__":
         f'-i "{mov_path}" -i "temp.srt" -map 0 -map 1 -c copy -c:s mov_text -y "output.mov"'
     )
     ffmpeg(f'-i "{mov_path}" -vf subtitles=temp.srt -c:a copy -y "output_burned.mov"')
+    os.remove("temp.srt")
