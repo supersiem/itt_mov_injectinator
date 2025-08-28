@@ -30,26 +30,10 @@ def itt_to_srt(itt_file_name: str, srt_file_name: str | None = None):
         return False
 
     def format_timestamp(ts: str) -> str:
-        """Convert ITT/TTML timestamp to SRT format (HH:MM:SS,mmm)."""
-        # Soms staat er 00:00:01.500 of 00:00:01;500
-        ts = ts.replace(";", ":")
-        if "." in ts:
-            time_part, ms_part = ts.split(".", 1)
-        elif "," in ts:
-            time_part, ms_part = ts.split(",", 1)
-        else:
-            time_part, ms_part = ts, "000"
-
-        # Pad ms naar 3 cijfers
-        ms_part = ms_part.ljust(3, "0")[:3]
-
-        # Zorg dat tijd altijd HH:MM:SS heeft
-        time_fields = time_part.split(":")
-        while len(time_fields) < 3:
-            time_fields.insert(0, "00")
-        time_part = ":".join(time_fields)
-
-        return f"{time_part},{ms_part}"
+        ms = ts.split(";")[1]
+        h, m, s = ts.split(";")[0].split(":")
+        # hours:minutes:seconds,milliseconds
+        return f"{h}:{m}:{s},{ms}"
 
     for idx, item in enumerate(itt_dataREAL, start=1):
         start = format_timestamp(item.attrib.get("begin", "00:00:00.000"))
